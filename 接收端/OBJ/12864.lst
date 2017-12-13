@@ -1,0 +1,200 @@
+C51 COMPILER V9.01   12864                                                                 11/14/2017 12:31:43 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE 12864
+OBJECT MODULE PLACED IN .\12864.obj
+COMPILER INVOKED BY: F:\Keil\keil5\C51\BIN\C51.EXE ..\12864\12864.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\12864;..\Delay;..
+                    -\Main;..\NRF24L01;..\Usart;..\OLED) DEBUG OBJECTEXTEND PRINT(.\12864.lst) OBJECT(.\12864.obj)
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include <intrins.h>
+   3          #include"12864.h"
+   4          #include "delay.h"
+   5          sbit RW=P0^1; 
+   6          sbit EN=P0^0;
+   7          
+   8          void write_com(uchar  com)
+   9          {
+  10   1              uchar i;
+  11   1              EN=0;
+  12   1              RW=1;
+  13   1              for(i=0;i<5;i++)
+  14   1              {
+  15   2                      EN=1;
+  16   2                      EN=0;                   
+  17   2              }
+  18   1              RW=0;EN=1;EN=0;
+  19   1              RW=0;EN=1;EN=0;
+  20   1              RW=0;EN=1;EN=0;
+  21   1              for(i=0;i<4;i++)
+  22   1              {
+  23   2                      RW=(bit)(com & (0x80) );
+  24   2                      EN=1;
+  25   2                      EN=0;
+  26   2                      com=com<<1;     
+  27   2              }
+  28   1              RW=0;
+  29   1              for(i=0;i<4;i++)
+  30   1              {
+  31   2                      EN=1;
+  32   2                      EN=0;
+  33   2              }
+  34   1              delay_ms(10);
+  35   1              for(i=0;i<4;i++)
+  36   1              {
+  37   2                      RW=(bit)(com & (0x80));
+  38   2                      EN=1;
+  39   2                      EN=0;
+  40   2                      com=com <<1;
+  41   2              }
+  42   1              RW=0;
+  43   1              for(i=0;i<4;i++)
+  44   1              {
+  45   2                      EN=1;
+  46   2                      EN=0;
+  47   2              }               
+  48   1      }
+  49          
+  50          /*************************************
+  51          *   函数功能：串口写入数据                       *
+  52          **************************************/
+  53          void write_date(uchar date)
+  54          {
+C51 COMPILER V9.01   12864                                                                 11/14/2017 12:31:43 PAGE 2   
+
+  55   1              uchar i;
+  56   1              EN=0;
+  57   1              RW=1;
+  58   1              for(i=0;i<5;i++)
+  59   1              {
+  60   2                      EN=1;
+  61   2                      EN=0;                   
+  62   2              }
+  63   1              RW=0;EN=1;EN=0;
+  64   1              RW=1;EN=1;EN=0;
+  65   1              RW=0;EN=1;EN=0;
+  66   1              for(i=0;i<4;i++)
+  67   1              {
+  68   2                      RW=(bit)(date & (0x80) );
+  69   2                      EN=1;
+  70   2                      EN=0;
+  71   2                      date=date<<1;   
+  72   2              }
+  73   1              RW=0;
+  74   1              for(i=0;i<4;i++)
+  75   1              {
+  76   2                      EN=1;
+  77   2                      EN=0;
+  78   2              }
+  79   1              delay_ms(10);
+  80   1              for(i=0;i<4;i++)
+  81   1              {
+  82   2                      RW=(bit)(date & (0x80));
+  83   2                      EN=1;
+  84   2                      EN=0;
+  85   2                      date=date<<1;
+  86   2              }
+  87   1              RW=0;
+  88   1              for(i=0;i<4;i++)
+  89   1              {
+  90   2                      EN=1;
+  91   2                      EN=0;
+  92   2              }                                       
+  93   1      }
+  94          
+  95          /*******初始化函数********/
+  96          void init_12864(void)  //此句写在主函数中用于初始化12864
+  97          {    
+  98   1               
+  99   1               write_com(0x30);  //基本指令操作
+ 100   1               delay_ms(10);
+ 101   1               write_com(0x0c);  //开显示，关光标
+ 102   1               delay_ms(10);
+ 103   1               write_com(0x01);   //清除LCD的显示内容
+ 104   1               delay_ms(10);  
+ 105   1              // display_string(0,1,"李敬毕业设计");
+ 106   1               display_string(0,2,"车位占空情况");
+ 107   1      
+ 108   1      }
+ 109          
+ 110          /***************设置显示位置函数********************/
+ 111          void display_string(unsigned char x,unsigned char y,unsigned char *s)
+ 112          { 
+ 113   1           switch(y)
+ 114   1           {
+ 115   2                       case 1: write_com(0x80+x);break;  //12864第一行
+ 116   2                   case 2: write_com(0x90+x);break;   //12864第二行
+C51 COMPILER V9.01   12864                                                                 11/14/2017 12:31:43 PAGE 3   
+
+ 117   2                   case 3: write_com(0x88+x);break;    //12864第三行
+ 118   2                   case 4: write_com(0x98+x);break;   //12864第四行
+ 119   2               default:break;           
+ 120   2               }
+ 121   1           while(*s)
+ 122   1           { 
+ 123   2              write_date(*s);    //显示字符串
+ 124   2                      delay_ms(10);
+ 125   2              s++;
+ 126   2           }
+ 127   1      }
+ 128          
+ 129          //void display_distance1(uchar x,uchar y,uint num2) //显示距离
+ 130          //{ 
+ 131          //   uchar a,b,c;
+ 132          //   switch(y)
+ 133          //     {
+ 134          //        case 1: write_com(0x80+x);break;
+ 135          //        case 2: write_com(0x90+x);break;
+ 136          //        case 3: write_com(0x88+x);break;
+ 137          //        case 4: write_com(0x98+x);break;
+ 138          //                      default:break;
+ 139          //      }
+ 140          //
+ 141          //       a=num2/100;//shi位
+ 142          //     b=num2/10%10;//ge位
+ 143          //       c=num2%10;//-temp2*(temp<=28 ? -1:1);//xiaoshu位
+ 144          //     
+ 145          //       write_date(a+0x30);     //ascii码转化为阿拉伯数字
+ 146          //       write_date(b+0x30);
+ 147          //     write_date('.');  
+ 148          //       write_date(c+0x30);
+ 149          //}
+ 150          
+ 151          void display_distance2(uchar x,uchar y,uint num1) //显示距离
+ 152          { 
+ 153   1         uchar a,b,c;
+ 154   1         switch(y)
+ 155   1           {
+ 156   2                case 1: write_com(0x80+x);break;
+ 157   2                case 2: write_com(0x90+x);break;
+ 158   2                case 3: write_com(0x88+x);break;
+ 159   2                case 4: write_com(0x98+x);break;
+ 160   2                              default:break;
+ 161   2              }
+ 162   1      
+ 163   1               a=num1/100;//百位
+ 164   1           b=num1/10%10;//十位
+ 165   1               c=num1%10;//个位
+ 166   1           
+ 167   1               write_date(a+0x30);     //ascii码转化为阿拉伯数字
+ 168   1               write_date(b+0x30);     
+ 169   1               write_date(c+0x30);
+ 170   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    466    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      11
+C51 COMPILER V9.01   12864                                                                 11/14/2017 12:31:43 PAGE 4   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

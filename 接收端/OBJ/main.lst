@@ -1,0 +1,87 @@
+C51 COMPILER V9.01   MAIN                                                                  11/14/2017 12:38:59 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\main.obj
+COMPILER INVOKED BY: F:\Keil\keil5\C51\BIN\C51.EXE ..\Main\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\12864;..\Delay;..\M
+                    -ain;..\NRF24L01;..\Usart;..\OLED) DEBUG OBJECTEXTEND PRINT(.\main.lst) OBJECT(.\main.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include "delay.h"
+   3          #include "Usart.h"
+   4          #include "12864.h"
+   5          #include "NRF2401.h"
+   6          #include "oled.h"
+   7          
+   8          
+   9          
+  10          void Deal_CarData(unsigned char i,unsigned char t)
+  11          {
+  12   1       switch(i)
+  13   1       {
+  14   2       case 0:OLED_ShowNum(t,6,0,4,16);  break;
+  15   2       case 1:OLED_ShowNum(t,6,1,4,16);  break;
+  16   2       case 2:OLED_ShowNum(t,6,10,4,16);  break;
+  17   2       case 3:OLED_ShowNum(t,6,11,4,16);  break;
+  18   2       case 4:OLED_ShowNum(t,6,100,4,16);  break;
+  19   2       case 5:OLED_ShowNum(t,6,101,4,16);  break;
+  20   2       case 6:OLED_ShowNum(t,6,110,4,16);  break;
+  21   2       case 7:OLED_ShowNum(t,6,111,4,16);  break;
+  22   2       case 8:OLED_ShowNum(t,6,1000,4,16);  break;
+  23   2       case 9:OLED_ShowNum(t,6,1001,4,16);  break;
+  24   2       case 10:OLED_ShowNum(t,6,1010,4,16); break;
+  25   2       case 11:OLED_ShowNum(t,6,1011,4,16); break;
+  26   2       case 12:OLED_ShowNum(t,6,1100,4,16); break;
+  27   2       case 13:OLED_ShowNum(t,6,1101,4,16); break;
+  28   2       case 14:OLED_ShowNum(t,6,1110,4,16); break;
+  29   2       case 15:OLED_ShowNum(t,6,1111,4,16); break;
+  30   2       default:break;
+  31   2       }
+  32   1      }
+  33          
+  34          
+  35          void main(void) 
+  36          {
+  37   1              unsigned char x=0;
+  38   1      //      Init_Usart();
+  39   1      //      NRF24L01Int();     // NRF24L01初始化
+  40   1      //      init_12864();
+  41   1              OLED_Init();
+  42   1              while(1)
+  43   1              {
+  44   2                      Menu_Display(x);
+  45   2                      x++;
+  46   2                      delay_ms(500);
+  47   2              /*NRFSetRXMode();//设置为接收模式
+  48   2              GetDate();//开始接受数
+  49   2              display_distance2(2,3,RevTempDate[0]);
+  50   2              display_distance2(1,4,RevTempDate[1]);
+  51   2              display_distance2(3,4,RevTempDate[2]);
+  52   2              display_distance2(5,4,RevTempDate[3]);
+  53   2              Send_Data(RevTempDate[0]);      
+  54   2              OLED_ShowNum(41,4,RevTempDate[0]/100,1,16);
+C51 COMPILER V9.01   MAIN                                                                  11/14/2017 12:38:59 PAGE 2   
+
+  55   2              OLED_ShowNum(49,4,RevTempDate[0]/10%10,1,16);
+  56   2              OLED_ShowNum(57,4,RevTempDate[0]%10,1,16);
+  57   2              Deal_CarData(RevTempDate[0]&0x0f,50);
+  58   2          Deal_CarData(RevTempDate[0]>>4,10);*/
+  59   2              }
+  60   1      }
+  61          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    290    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

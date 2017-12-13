@@ -1,0 +1,7 @@
+".\main.obj",
+".\AD.obj",
+".\Delay.obj",
+".\Usart.obj",
+".\nrf2401.obj" 
+TO "Í£³µÎ»" 
+RAMSIZE(256) 

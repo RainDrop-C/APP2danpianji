@@ -1,0 +1,1 @@
+"..\OLED\oled.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\12864;..\Delay;..\Main;..\NRF24L01;..\Usart;..\OLED) DEBUG OBJECTEXTEND PRINT(.\oled.lst) OBJECT(.\oled.obj)

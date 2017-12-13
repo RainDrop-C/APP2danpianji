@@ -1,0 +1,164 @@
+C51 COMPILER V9.01   NRF2401                                                               11/14/2017 12:31:43 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE NRF2401
+OBJECT MODULE PLACED IN .\NRF2401.obj
+COMPILER INVOKED BY: F:\Keil\keil5\C51\BIN\C51.EXE ..\NRF24L01\NRF2401.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\12864;..\Del
+                    -ay;..\Main;..\NRF24L01;..\Usart;..\OLED) DEBUG OBJECTEXTEND PRINT(.\NRF2401.lst) OBJECT(.\NRF2401.obj)
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include"NRF2401.h"
+   3          #include"delay.h"
+   4          
+   5          sbit CE   = P2^3;     //RX/TX模式选择端
+   6          sbit CSN  = P2^0;    //SPI片选端//就是SS
+   7          sbit SCLK = P2^4;        //SPI时钟端
+   8          sbit MOSI = P2^1;        //SPI主机输出从机输入端
+   9          sbit MISO = P2^5;        //SPI主机输出从机输出端
+  10          sbit IRQ  = P2^2;   //可屏蔽中断端              
+  11          /*
+  12          sbit CE   = P2^5;     //RX/TX模式选择端
+  13          sbit CSN  = P2^0;    //SPI片选端//就是SS
+  14          sbit SCLK = P2^4;        //SPI时钟端
+  15          sbit MOSI = P2^1;        //SPI主机输出从机输入端
+  16          sbit MISO = P2^3;        //SPI主机输出从机输出端
+  17          sbit IRQ  = P2^2;   //可屏蔽中断端
+  18          */      
+  19          uchar RevTempDate[4]={0};//最后一位用来存放结束标志
+  20          uchar code TxAddr[]={0x34,0x43,0x10,0x10,0x01};//发送地址
+  21          
+  22          /*****************状态标志*****************************************/
+  23          uchar  bdata sta;   //状态标志
+  24          sbit RX_DR  = sta^6;
+  25          sbit TX_DS  = sta^5;
+  26          sbit MAX_RT = sta^4;
+  27          
+  28          /*****************SPI时序函数******************************************/
+  29          uchar NRFSPI(uchar date)
+  30          {
+  31   1          uchar i;
+  32   1              for(i=0;i<8;i++)          // 循环8次
+  33   1              {
+  34   2                if(date&0x80)
+  35   2                MOSI=1;
+  36   2                else
+  37   2                MOSI=0;   // byte最高位输出到MOSI
+  38   2                date<<=1;             // 低一位移位到最高位
+  39   2                SCLK=1; 
+  40   2                if(MISO)               // 拉高SCK，nRF24L01从MOSI读入1位数据，同时从MISO输出1位数据
+  41   2                date|=0x01;           // 读MISO到byte最低位
+  42   2                SCLK=0;               // SCK置低
+  43   2              }
+  44   1          return(date);               // 返回读出的一字节
+  45   1      }
+  46          
+  47          /**********************NRF24L01初始化函数*******************************/
+  48          void NRF24L01Int()
+  49          {
+  50   1              delay_ms(2);//让系统什么都不干
+  51   1              CE=0;
+  52   1              CSN=1;  
+  53   1              SCLK=0;
+  54   1              IRQ=1; 
+C51 COMPILER V9.01   NRF2401                                                               11/14/2017 12:31:43 PAGE 2   
+
+  55   1      }
+  56          
+  57          /*****************SPI读寄存器一字节函数*********************************/
+  58          uchar NRFReadReg(uchar RegAddr)
+  59          {
+  60   1         uchar BackDate;
+  61   1         CSN=0;//启动时序
+  62   1         NRFSPI(RegAddr);//写寄存器地址
+  63   1         BackDate=NRFSPI(0x00);//写入读寄存器指令  
+  64   1         CSN=1;
+  65   1         return(BackDate); //返回状态
+  66   1      }
+  67          
+  68          /*****************SPI写寄存器一字节函数*********************************/
+  69          uchar NRFWriteReg(uchar RegAddr,uchar date)
+  70          {
+  71   1         uchar BackDate;
+  72   1         CSN=0;//启动时序
+  73   1         BackDate=NRFSPI(RegAddr);//写入地址
+  74   1         NRFSPI(date);//写入值
+  75   1         CSN=1;  
+  76   1         return(BackDate);
+  77   1      }
+  78          
+  79          /*****************SPI读取RXFIFO寄存器的值********************************/
+  80          uchar NRFReadRxDate(uchar RegAddr,uchar *RxDate,uchar DateLen)
+  81          {  //寄存器地址//读取数据存放变量//读取数据长度//用于接收
+  82   1          uchar BackDate,i;
+  83   1              CSN=0;//启动时序
+  84   1              BackDate=NRFSPI(RegAddr);//写入要读取的寄存器地址
+  85   1              for(i=0;i<DateLen;i++) //读取数据
+  86   1                {
+  87   2                   RxDate[i]=NRFSPI(0);
+  88   2                } 
+  89   1          CSN=1;
+  90   1         return(BackDate); 
+  91   1      }
+  92          
+  93          /*****************SPI写入TXFIFO寄存器的值**********************************/
+  94          uchar NRFWriteTxDate(uchar RegAddr,uchar *TxDate,uchar DateLen)
+  95          { //寄存器地址//写入数据存放变量//读取数据长度//用于发送
+  96   1         uchar BackDate,i;
+  97   1         CSN=0;
+  98   1         BackDate=NRFSPI(RegAddr);//写入要写入寄存器的地址
+  99   1         for(i=0;i<DateLen;i++)//写入数据
+ 100   1           {
+ 101   2                  NRFSPI(*TxDate++);
+ 102   2               }   
+ 103   1         CSN=1;
+ 104   1         return(BackDate);
+ 105   1      }
+ 106          
+ 107          /*****************NRF设置为接收模式并接收数据******************************/
+ 108          //接收模式
+ 109          void NRFSetRXMode()
+ 110          {
+ 111   1          CE=0;
+ 112   1              NRFWriteTxDate(W_REGISTER+RX_ADDR_P0,TxAddr,TX_ADDR_WITDH);  // 接收设备接收通道0使用和发送设备相同的发
+             -送地址
+ 113   1              NRFWriteReg(W_REGISTER+EN_AA,0x01);               // 使能接收通道0自动应答
+ 114   1              NRFWriteReg(W_REGISTER+EN_RXADDR,0x01);           // 使能接收通道0
+ 115   1              NRFWriteReg(W_REGISTER+RF_CH,0x40);                 // 选择射频通道0x40
+C51 COMPILER V9.01   NRF2401                                                               11/14/2017 12:31:43 PAGE 3   
+
+ 116   1              NRFWriteReg(W_REGISTER+RX_PW_P0,TX_DATA_WITDH);  // 接收通道0选择和发送通道相同有效数据宽度
+ 117   1              NRFWriteReg(W_REGISTER+RF_SETUP,0x07);            // 数据传输率1Mbps，发射功率0dBm，低噪声放大器增益
+ 118   1              NRFWriteReg(W_REGISTER+CONFIG,0x0f);             // CRC使能，16位CRC校验，上电，接收模式     
+ 119   1              CE = 1; 
+ 120   1              delay_ms(5);    
+ 121   1      }
+ 122                                          
+ 123          void GetDate()                           
+ 124          {                
+ 125   1              sta=NRFReadReg(R_REGISTER+STATUS);//发送数据后读取状态寄存器
+ 126   1               if(RX_DR)                              // 判断是否接收到数据
+ 127   1               {               
+ 128   2               CE=0;//待机
+ 129   2               NRFReadRxDate(R_RX_PAYLOAD,RevTempDate,RX_DATA_WITDH);// 从RXFIFO读取数据 接收4位即可，后一位位结束位
+ 130   2               NRFWriteReg(W_REGISTER+STATUS,0xff); //接收到数据后RX_DR,TX_DS,MAX_PT都置高为1，通过写1来清楚中断标
+ 131   2               CSN=0;
+ 132   2               NRFSPI(FLUSH_RX);//用于清空FIFO ！！关键！！不然会出现意想不到的后果！！！大家记住！！ 
+ 133   2               CSN=1;  
+ 134   2               }  
+ 135   1      }                                        
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    284    ----
+   CONSTANT SIZE    =      5    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

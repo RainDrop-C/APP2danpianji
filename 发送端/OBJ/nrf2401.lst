@@ -1,0 +1,144 @@
+C51 COMPILER V9.01   NRF2401                                                               04/04/2017 16:32:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE NRF2401
+OBJECT MODULE PLACED IN .\nrf2401.obj
+COMPILER INVOKED BY: F:\Keil4\C51\BIN\C51.EXE ..\NRF24L01\nrf2401.c BROWSE INCDIR(..\AD;..\MAIN;..\DELAY;..\Usart;..\NRF
+                    -24L01) DEBUG OBJECTEXTEND PRINT(.\nrf2401.lst) OBJECT(.\nrf2401.obj)
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include "nrf2401.h"
+   3          #include "delay.h"
+   4          
+   5          sbit CE   = P2^5;     //RX/TXÄ£Ê½Ñ¡Ôñ¶Ë
+   6          sbit CSN  = P2^0;    //SPIÆ¬Ñ¡¶Ë//¾ÍÊÇSS
+   7          sbit SCLK = P2^4;        //SPIÊ±ÖÓ¶Ë
+   8          sbit MOSI = P2^1;        //SPIÖ÷»úÊä³ö´Ó»úÊäÈë¶Ë
+   9          sbit MISO = P2^3;        //SPIÖ÷»úÊä³ö´Ó»úÊä³ö¶Ë
+  10          sbit IRQ  = P2^2;   //¿ÉÆÁ±ÎÖÐ¶Ï¶Ë              
+  11          
+  12          uchar code TxAddr[]={0x34,0x43,0x10,0x10,0x01};//·¢ËÍµØÖ·
+  13          
+  14          /*****************×´Ì¬±êÖ¾*****************************************/
+  15          uchar  bdata sta;   //×´Ì¬±êÖ¾
+  16          sbit RX_DR=sta^6;
+  17          sbit TX_DS=sta^5;
+  18          sbit MAX_RT=sta^4;
+  19          
+  20          /*****************SPIÊ±Ðòº¯Êý******************************************/
+  21          uchar NRFSPI(uchar date)
+  22          {
+  23   1          uchar i;
+  24   1              for(i=0;i<8;i++)          // Ñ­»·8´Î
+  25   1              {
+  26   2                if(date&0x80)
+  27   2                  MOSI=1;
+  28   2                else
+  29   2                  MOSI=0;   // byte×î¸ßÎ»Êä³öµ½MOSI
+  30   2                date<<=1;             // µÍÒ»Î»ÒÆÎ»µ½×î¸ßÎ»
+  31   2                SCLK=1; 
+  32   2                if(MISO)               // À­¸ßSCK£¬nRF24L01´ÓMOSI¶ÁÈë1Î»Êý¾Ý£¬Í¬Ê±´ÓMISOÊä³ö1Î»Êý¾Ý
+  33   2                  date|=0x01;         // ¶ÁMISOµ½byte×îµÍÎ»
+  34   2                SCLK=0;               // SCKÖÃµÍ
+  35   2              }
+  36   1          return(date);               // ·µ»Ø¶Á³öµÄÒ»×Ö½Ú
+  37   1      }
+  38          /**********************NRF24L01³õÊ¼»¯º¯Êý*******************************/
+  39          void NRF24L01Int()
+  40          {
+  41   1              delay_ms(2);//ÈÃÏµÍ³Ê²Ã´¶¼²»¸É
+  42   1              CE=0;
+  43   1              CSN=1;  
+  44   1              SCLK=0;
+  45   1              IRQ=1; 
+  46   1      }
+  47          /*****************SPI¶Á¼Ä´æÆ÷Ò»×Ö½Úº¯Êý*********************************/
+  48          uchar NRFReadReg(uchar RegAddr)
+  49          {
+  50   1         uchar BackDate;
+  51   1         CSN=0;//Æô¶¯Ê±Ðò
+  52   1         NRFSPI(RegAddr);//Ð´¼Ä´æÆ÷µØÖ·
+  53   1         BackDate=NRFSPI(0x00);//Ð´Èë¶Á¼Ä´æÆ÷Ö¸Áî  
+  54   1         CSN=1;
+C51 COMPILER V9.01   NRF2401                                                               04/04/2017 16:32:33 PAGE 2   
+
+  55   1         return(BackDate); //·µ»Ø×´Ì¬
+  56   1      }
+  57          /*****************SPIÐ´¼Ä´æÆ÷Ò»×Ö½Úº¯Êý*********************************/
+  58          uchar NRFWriteReg(uchar RegAddr,uchar date)
+  59          {
+  60   1         uchar BackDate;
+  61   1         CSN=0;//Æô¶¯Ê±Ðò
+  62   1         BackDate=NRFSPI(RegAddr);//Ð´ÈëµØÖ·
+  63   1         NRFSPI(date);//Ð´ÈëÖµ
+  64   1         CSN=1;  
+  65   1         return(BackDate);
+  66   1      }
+  67          
+  68          
+  69          /*****************SPIÐ´ÈëTXFIFO¼Ä´æÆ÷µÄÖµ**********************************/
+  70          uchar NRFWriteTxDate(uchar RegAddr,uchar *TxDate,uchar DateLen)
+  71          { //¼Ä´æÆ÷µØÖ·//Ð´ÈëÊý¾Ý´æ·Å±äÁ¿//¶ÁÈ¡Êý¾Ý³¤¶È//ÓÃÓÚ·¢ËÍ
+  72   1         uchar BackDate,i;
+  73   1         CSN=0;
+  74   1         BackDate=NRFSPI(RegAddr);//Ð´ÈëÒªÐ´Èë¼Ä´æÆ÷µÄµØÖ·
+  75   1         for(i=0;i<DateLen;i++)//Ð´ÈëÊý¾Ý
+  76   1           {
+  77   2                  NRFSPI(*TxDate++);
+  78   2               }   
+  79   1         CSN=1;
+  80   1         return(BackDate);
+  81   1      }
+  82          /*****************NRFÉèÖÃÎª·¢ËÍÄ£Ê½²¢·¢ËÍÊý¾Ý******************************/
+  83          void NRFSetTxMode(uchar *TxDate)
+  84          {  //·¢ËÍÄ£Ê½ 
+  85   1          CE=0;   
+  86   1              NRFWriteTxDate(W_REGISTER+TX_ADDR,TxAddr,TX_ADDR_WITDH);//Ð´¼Ä´æÆ÷Ö¸Áî+P0µØÖ·Ê¹ÄÜÖ¸Áî+·¢ËÍµØÖ·+µØÖ·¿í¶
+             -È
+  87   1              NRFWriteTxDate(W_REGISTER+RX_ADDR_P0,TxAddr,TX_ADDR_WITDH);//ÎªÁËÓ¦´ð½ÓÊÕÉè±¸£¬½ÓÊÕÍ¨µÀ0µØÖ·ºÍ·¢ËÍµØÖ·ÏàÍ
+             -¬
+  88   1              NRFWriteTxDate(W_TX_PAYLOAD,TxDate,TX_DATA_WITDH);//Ð´ÈëÊý¾Ý 
+  89   1              /******ÏÂÃæÓÐ¹Ø¼Ä´æÆ÷ÅäÖÃ**************/
+  90   1              NRFWriteReg(W_REGISTER+EN_AA,0x01);       // Ê¹ÄÜ½ÓÊÕÍ¨µÀ0×Ô¶¯Ó¦´ð
+  91   1              NRFWriteReg(W_REGISTER+EN_RXADDR,0x01);   // Ê¹ÄÜ½ÓÊÕÍ¨µÀ0
+  92   1              NRFWriteReg(W_REGISTER+SETUP_RETR,0x0a);  // ×Ô¶¯ÖØ·¢ÑÓÊ±µÈ´ý250us+86us£¬×Ô¶¯ÖØ·¢10´Î
+  93   1              NRFWriteReg(W_REGISTER+RF_CH,0x40);         // Ñ¡ÔñÉäÆµÍ¨µÀ0x40
+  94   1              NRFWriteReg(W_REGISTER+RF_SETUP,0x07);    // Êý¾Ý´«ÊäÂÊ1Mbps£¬·¢Éä¹¦ÂÊ0dBm£¬µÍÔëÉù·Å´óÆ÷ÔöÒæ
+  95   1              NRFWriteReg(W_REGISTER+CONFIG,0x0e);      // CRCÊ¹ÄÜ£¬16Î»CRCÐ£Ñé£¬ÉÏµç 
+  96   1              CE=1;   
+  97   1              delay_ms(5);//±£³Ö10usÃëÒÔÉÏ
+  98   1      } 
+  99          
+ 100          /****************************¼ì²âÊÇ·ñÓÐ½ÓÊÕµ½Êý¾Ý******************************/
+ 101          uchar  CheckACK()
+ 102          {                                                                                                                                                                                                //ÓÃÓÚ·¢Éä
+ 103   1      sta=NRFReadReg(R_REGISTER+STATUS);                    // ·µ»Ø×´Ì¬¼Ä´æÆ÷
+ 104   1              if(TX_DS||MAX_RT) //·¢ËÍÍê±ÏÖÐ¶Ï
+ 105   1              {
+ 106   2                 NRFWriteReg(W_REGISTER+STATUS,0xff);  // Çå³ýTX_DS»òMAX_RTÖÐ¶Ï±êÖ¾
+ 107   2                 CSN=0;
+ 108   2                 NRFSPI(FLUSH_TX);//ÓÃÓÚÇå¿ÕFIFO £¡£¡¹Ø¼ü£¡£¡²»È»»á³öÏÖÒâÏë²»µ½µÄºó¹û£¡£¡£¡´ó¼Ò¼Ç×¡£¡£¡  
+ 109   2             CSN=1; 
+ 110   2                 return(0);
+ 111   2              }
+ 112   1              else
+ 113   1                 return(1);
+ 114   1      }
+C51 COMPILER V9.01   NRF2401                                                               04/04/2017 16:32:33 PAGE 3   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    261    ----
+   CONSTANT SIZE    =      5    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

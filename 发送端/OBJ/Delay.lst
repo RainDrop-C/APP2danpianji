@@ -1,0 +1,142 @@
+C51 COMPILER V9.01   DELAY                                                                 04/04/2017 16:32:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Delay.obj
+COMPILER INVOKED BY: F:\Keil4\C51\BIN\C51.EXE ..\DELAY\Delay.c BROWSE INCDIR(..\AD;..\MAIN;..\DELAY;..\Usart;..\NRF24L01
+                    -) DEBUG OBJECTEXTEND PRINT(.\Delay.lst) OBJECT(.\Delay.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include "intrins.h"
+   3          #include "delay.h" 
+   4          
+   5          /*************************************************** 
+   6          *函数名称：void delay(unsigned int time)
+   7          *输入参数：time，延时时间
+   8          *返回值：无
+   9          *功能：模糊延时
+  10          *时间：2016-4-15
+  11          *使用：delay(5000);
+  12          ****************************************************/
+  13          void delay(unsigned int time) //int型数据为16位,所以最大值为65535            
+  14          {
+  15   1              unsigned int i,j;            
+  16   1              for(i=0;i<time;i++)          
+  17   1                      for(j=0;j<50;j++);      
+  18   1      } 
+  19          
+  20          /***************************************************
+  21          *函数名称：void delay_ms(void)
+  22          *输入参数：无
+  23          *返回值：无
+  24          *功能：1ms延时
+  25          *时间：2016-4-15
+  26          *使用：delay_ms();
+  27          ***************************************************/
+  28          void delayms(void)              //@11.0592MHz
+  29          {
+  30   1              unsigned char i,j;
+  31   1              _nop_();
+  32   1              _nop_();
+  33   1              _nop_();
+  34   1              i = 11;
+  35   1              j = 190;
+  36   1              do
+  37   1              {
+  38   2                      while (--j);
+  39   2              } 
+  40   1              while (--i);
+  41   1      }
+  42          
+  43          void delay_ms(unsigned int time)
+  44          {
+  45   1              unsigned int i;
+  46   1              for(i=0;i<time;i++)
+  47   1                      delayms();
+  48   1      }
+  49          /**************************************************
+  50          *函数名称：void delay_us(void)
+  51          *输入参数：无
+  52          *返回值：无
+  53          *功能：1us延时
+  54          *时间：2016-4-15
+C51 COMPILER V9.01   DELAY                                                                 04/04/2017 16:32:33 PAGE 2   
+
+  55          *使用：delay_us();
+  56          **************************************************/
+  57          void delayus(void)              //@11.0592MHz
+  58          {
+  59   1              _nop_();
+  60   1              _nop_();
+  61   1              _nop_();
+  62   1      }
+  63          
+  64          void delay_us(unsigned int time)
+  65          {
+  66   1              unsigned int i;
+  67   1              for(i=0;i<time;i++)
+  68   1                      delayus();
+  69   1      }
+  70          /****************************************************** 
+  71          *函数名称：void delay_s(void)
+  72          *输入参加：无
+  73          *返回值：无
+  74          *功能：1us延时
+  75          *时间：2016-4-15
+  76          *使用：delay_us();
+  77          ******************************************************/
+  78          void delay_s(void)              //@11.0592MHz
+  79          {
+  80   1              unsigned char i, j, k;
+  81   1              _nop_();
+  82   1              _nop_();
+  83   1              i = 43;
+  84   1              j = 6;
+  85   1              k = 203;
+  86   1              do
+  87   1              {
+  88   2                      do
+  89   2                      {
+  90   3                              while (--k);
+  91   3                      }       while (--j);
+  92   2              } 
+  93   1              while (--i);
+  94   1      }
+  95          
+  96          
+  97          void delay_n_s(unsigned int i)
+  98          {
+  99   1              unsigned int j; 
+ 100   1              for(j=0;j<i;j++)
+ 101   1              delay_s();
+ 102   1      }
+ 103          
+ 104          
+ 105          
+ 106          
+ 107          
+ 108          
+ 109          
+ 110          
+ 111          
+ 112          
+ 113          
+ 114          
+
+
+C51 COMPILER V9.01   DELAY                                                                 04/04/2017 16:32:33 PAGE 3   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    132    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

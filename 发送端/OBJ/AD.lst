@@ -1,0 +1,85 @@
+C51 COMPILER V9.01   AD                                                                    04/04/2017 16:32:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE AD
+OBJECT MODULE PLACED IN .\AD.obj
+COMPILER INVOKED BY: F:\Keil4\C51\BIN\C51.EXE ..\AD\AD.C BROWSE INCDIR(..\AD;..\MAIN;..\DELAY;..\Usart;..\NRF24L01) DEBU
+                    -G OBJECTEXTEND PRINT(.\AD.lst) OBJECT(.\AD.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include "AD.H"
+   3          #include "Delay.h"
+   4          #include "Usart.h"
+   5          
+   6          sbit  Car1 = P1^0;         //一号车位对应的单片机P1^0检测口
+   7          sbit  Car2 = P1^1;         //二号车位对应的单片机P1^1检测口
+   8          sbit  Car3 = P1^2;         //三号车位对应的单片机P1^2检测口
+   9          sbit  Car4 = P1^3;         //四号车位对应的单片机P1^3检测口
+  10          sbit  Car5 = P1^4;         //五号车位对应的单片机P1^4检测口
+  11          sbit  Car6 = P1^5;         //六号车位对应的单片机P1^5检测口
+  12          sbit  Car7 = P1^6;         //七号车位对应的单片机P1^6检测口
+  13          sbit  Car8 = P1^7;         //八号车位对应的单片机P1^7检测口
+  14          
+  15          unsigned char temp[8];
+  16          
+  17          unsigned char  Send_Advalue(void)
+  18          {
+  19   1         unsigned char Num_1=0;
+  20   1         Num_1=((temp[7]<<7)|(temp[6]<<6)|(temp[5]<<5)|(temp[4]<<4)|(temp[3]<<3)|(temp[2]<<2)|(temp[1]<<1)|(temp
+             -[0])); 
+  21   1         delay_n_s(1); 
+  22   1         return  Num_1;
+  23   1      }
+  24          
+  25          
+  26          void Test(void)
+  27          {
+  28   1              if(Car1==1){   delay_ms(10); if(Car1==1){ temp[0]=0;}   }
+  29   1              if(Car2==1){   delay_ms(10); if(Car2==1){ temp[1]=0;}   }
+  30   1              if(Car3==1){   delay_ms(10); if(Car3==1){ temp[2]=0;}   }
+  31   1              if(Car4==1){   delay_ms(10); if(Car4==1){ temp[3]=0;}   }
+  32   1              if(Car5==1){   delay_ms(10); if(Car5==1){ temp[4]=0;}   }
+  33   1              if(Car6==1){   delay_ms(10); if(Car6==1){ temp[5]=0;}   }
+  34   1              if(Car7==1){   delay_ms(10); if(Car7==1){ temp[6]=0;}   }
+  35   1              if(Car8==1){   delay_ms(10); if(Car8==1){ temp[7]=0;}   }
+  36   1      
+  37   1              if(Car1==0){   delay_ms(10); if(Car1==0){ temp[0]=1;}   }
+  38   1              if(Car2==0){   delay_ms(10); if(Car2==0){ temp[1]=1;}   }
+  39   1              if(Car3==0){   delay_ms(10); if(Car3==0){ temp[2]=1;}   }
+  40   1              if(Car4==0){   delay_ms(10); if(Car4==0){ temp[3]=1;}   }
+  41   1              if(Car5==0){   delay_ms(10); if(Car5==0){ temp[4]=1;}   }
+  42   1              if(Car6==0){   delay_ms(10); if(Car6==0){ temp[5]=1;}   }
+  43   1              if(Car7==0){   delay_ms(10); if(Car7==0){ temp[6]=1;}   }
+  44   1              if(Car8==0){   delay_ms(10); if(Car8==0){ temp[7]=1;}   }
+  45   1      }
+  46          
+  47          
+  48          
+  49          
+  50          
+  51          
+  52          
+  53          
+C51 COMPILER V9.01   AD                                                                    04/04/2017 16:32:33 PAGE 2   
+
+  54          
+  55          
+  56          
+  57          
+  58          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    329    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,8 @@
+".\main.obj",
+".\Usart.obj",
+".\NRF2401.obj",
+".\12864.obj",
+".\delay.obj",
+".\oled.obj" 
+TO "停车位接收端与上位机通信" 
+RAMSIZE(256) 
